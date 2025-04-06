@@ -95,9 +95,12 @@ Contributors are most welcome.
 
 * Home Page:
 
-![Alt text](https://github.com/shardwiz/java-spring-ecommerce/blob/master/src/main/webapp/WEB-INF/resource/images/screenshots/Home.jpg "Home Page")
+![Alt text](https://github.com/shardwiz/java-spring-boot-ecommerce/blob/master/src/main/webapp/WEB-INF/resource/images/screenshots/Home.jpg "Home Page")
 
 * Contact Us:
 
-![Alt text](https://github.com/shardwiz/java-spring-ecommerce/blob/master/src/main/webapp/WEB-INF/resource/images/screenshots/ContactUs.png)
+![Alt text](https://github.com/shardwiz/java-spring-boot-ecommerce/blob/master/src/main/webapp/WEB-INF/resource/images/screenshots/ContactUs.png)
 
+* Product Management:
+
+![Alt text](https://github.com/shardwiz/java-spring-boot-ecommerce/blob/master/src/main/webapp/WEB-INF/resource/images/screenshots/AdminLoginProductList.jpg)
