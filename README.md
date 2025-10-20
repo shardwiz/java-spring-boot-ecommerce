@@ -100,7 +100,3 @@ Contributors are most welcome.
 * Contact Us:
 
 ![Alt text](https://github.com/shardwiz/java-spring-boot-ecommerce/blob/master/src/main/webapp/WEB-INF/resource/images/screenshots/ContactUs.png)
-
-* Product Management:
-
-![Alt text](https://github.com/shardwiz/java-spring-boot-ecommerce/blob/master/src/main/webapp/WEB-INF/resource/images/screenshots/AdminLoginProductList.jpg)
