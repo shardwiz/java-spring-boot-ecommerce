@@ -1,6 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
 	pageEncoding="ISO-8859-1"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
+<%@ taglib prefix="security"
+	uri="http://www.springframework.org/security/tags"%>
 <%@ page isELIgnored="false"%>
 
 <!-- 	navigation Bar -->
@@ -28,6 +31,75 @@
 		style="width: 1145px; margin-bottom: 180px;">
 		<h2>Product Management</h2>
 		<p>The List of Products in our Database</p>
+		
+		<!-- Search and Filter Form -->
+		<div class="panel panel-default" style="margin-bottom: 20px;">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<span class="glyphicon glyphicon-search"></span> Search & Filter Products
+				</h4>
+			</div>
+			<div class="panel-body">
+				<form action="<c:url value='/searchProducts'/>" method="GET" class="form-horizontal">
+					<div class="row">
+						<div class="col-sm-4">
+							<div class="form-group">
+								<label for="searchTerm" class="control-label">Search by Name:</label>
+								<input type="text" class="form-control" id="searchTerm" name="searchTerm" 
+									placeholder="Enter product name..." value="${searchTerm}">
+							</div>
+						</div>
+						<div class="col-sm-3">
+							<div class="form-group">
+								<label for="category" class="control-label">Category:</label>
+								<select class="form-control" id="category" name="category">
+									<option value="All" ${selectedCategory == 'All' ? 'selected' : ''}>All Categories</option>
+									<option value="Android" ${selectedCategory == 'Android' ? 'selected' : ''}>Android</option>
+									<option value="Windows" ${selectedCategory == 'Windows' ? 'selected' : ''}>Windows</option>
+									<option value="Linux" ${selectedCategory == 'Linux' ? 'selected' : ''}>Linux</option>
+									<option value="Mac" ${selectedCategory == 'Mac' ? 'selected' : ''}>Mac</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-sm-2">
+							<div class="form-group">
+								<label for="minPrice" class="control-label">Min Price:</label>
+								<input type="number" class="form-control" id="minPrice" name="minPrice" 
+									placeholder="Min" min="0" step="0.01" value="${minPrice}">
+							</div>
+						</div>
+						<div class="col-sm-2">
+							<div class="form-group">
+								<label for="maxPrice" class="control-label">Max Price:</label>
+								<input type="number" class="form-control" id="maxPrice" name="maxPrice" 
+									placeholder="Max" min="0" step="0.01" value="${maxPrice}">
+							</div>
+						</div>
+						<div class="col-sm-1">
+							<div class="form-group">
+								<label class="control-label">&nbsp;</label>
+								<button type="submit" class="btn btn-primary btn-block">
+									<span class="glyphicon glyphicon-search"></span> Search
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-12">
+							<a href="<c:url value='/getAllProducts'/>" class="btn btn-default">
+								<span class="glyphicon glyphicon-refresh"></span> Clear Filters
+							</a>
+							<c:if test="${not empty searchTerm or (not empty selectedCategory and selectedCategory != 'All') or not empty minPrice or not empty maxPrice}">
+								<span class="label label-info" style="margin-left: 10px;">
+									Found ${fn:length(products)} product(s)
+								</span>
+							</c:if>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		
 		<table class="table table-hover" id="productList">
 			<thead>
 				<tr>

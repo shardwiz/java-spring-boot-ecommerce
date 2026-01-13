@@ -165,4 +165,27 @@ public class ProductController {
 		return "productListAngular";
 	}
 
+	// Search and filter endpoints
+	@RequestMapping(value = "/searchProducts", method = RequestMethod.GET)
+	public ModelAndView searchProducts(@RequestParam(value = "searchTerm", required = false) String searchTerm,
+			@RequestParam(value = "category", required = false) String category,
+			@RequestParam(value = "minPrice", required = false) Double minPrice,
+			@RequestParam(value = "maxPrice", required = false) Double maxPrice) {
+		
+		List<Product> products;
+		
+		if (searchTerm != null || (category != null && !category.equals("All")) || minPrice != null || maxPrice != null) {
+			products = productService.searchProducts(searchTerm, category, minPrice, maxPrice);
+		} else {
+			products = productService.getAllProducts();
+		}
+		
+		ModelAndView modelAndView = new ModelAndView("productList", "products", products);
+		modelAndView.addObject("searchTerm", searchTerm != null ? searchTerm : "");
+		modelAndView.addObject("selectedCategory", category != null ? category : "All");
+		modelAndView.addObject("minPrice", minPrice != null ? minPrice : "");
+		modelAndView.addObject("maxPrice", maxPrice != null ? maxPrice : "");
+		return modelAndView;
+	}
+
 }
