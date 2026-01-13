@@ -6,7 +6,7 @@ modules
 
 ### Functionalities:
 
-1. User Registeration Cell.
+1. User Registration.
 
 2. **CRUD Operations** like
 
@@ -33,7 +33,7 @@ modules
 ### Tools and Technologies:
 
 * **Technology** : Bootstrap, Java, Spring MVC, Hibernate, JSP, Maven.
-* **Application Servicer**: Apache Tomcat Server.
+* **Application Server**: Apache Tomcat Server.
 * **Database** : H2 Database (In memory database)
 
 ### Installation:
@@ -61,7 +61,7 @@ modules
 
 8. Run your H2 Database.
 
-9. Configure your databse configuration in **application-context.xml**.
+9. Configure your database configuration in **applicationContext.xml**.
 
    * Database properties:
 
@@ -82,7 +82,7 @@ modules
 
 10. Run the server.
 
-#### Somethings wrong!!
+#### Something's wrong!
 
 If you find that something's wrong with this package, you can let me know by raising an issue on the GitHub issue tracker, 
 or take it as a task and 🧑‍💻 resolve it 💪 --> create a PullRequest 🛠.
