@@ -18,17 +18,17 @@ modules
 3. **Spring Security**
 
 * User can login into the site
-* The entire site will change according to the role, depending on whether the client is User or Admin.
-* User can logout after completing.
+* The entire site will change according to the role, depending on whether the client is User or Admin
+* User can logout after completing
 
 4. **Spring WebFlow**
 
-* After adding products the cart the User can checkout using spring WebFlow.
-* Confirming User Details.
-* Confirming Shipping and Billing Address.
-* Receipt.
-* If the user cancels the webflow, it will go to cancel Page.
-* If the user submits the checkout, it will go to thank you page with the timing of delivery Report.
+* After adding products the cart the User can checkout using spring WebFlow
+* Confirming User Details
+* Confirming Shipping and Billing Address
+* Receipt
+* If the user cancels the webflow, it will go to cancel Page
+* If the user submits the checkout, it will go to thank you page with the timing of delivery Report
 
 ### Tools and Technologies:
 
