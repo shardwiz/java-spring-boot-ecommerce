@@ -2,8 +2,10 @@ package com.dao;
 
 import java.util.List;
 
+import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -74,6 +76,66 @@ public class ProductDaoImpl implements ProductDao {
 		session.update(product);
 		session.flush();
 		session.close();
+	}
+
+	@Override
+	public List<Product> searchProductsByName(String searchTerm) {
+		Session session = sessionFactory.openSession();
+		Criteria criteria = session.createCriteria(Product.class);
+		criteria.add(Restrictions.ilike("productName", "%" + searchTerm + "%"));
+		@SuppressWarnings("unchecked")
+		List<Product> products = criteria.list();
+		session.close();
+		return products;
+	}
+
+	@Override
+	public List<Product> searchProductsByCategory(String category) {
+		Session session = sessionFactory.openSession();
+		Criteria criteria = session.createCriteria(Product.class);
+		criteria.add(Restrictions.eq("productCategory", category));
+		@SuppressWarnings("unchecked")
+		List<Product> products = criteria.list();
+		session.close();
+		return products;
+	}
+
+	@Override
+	public List<Product> searchProductsByPriceRange(double minPrice, double maxPrice) {
+		Session session = sessionFactory.openSession();
+		Criteria criteria = session.createCriteria(Product.class);
+		criteria.add(Restrictions.between("productPrice", minPrice, maxPrice));
+		@SuppressWarnings("unchecked")
+		List<Product> products = criteria.list();
+		session.close();
+		return products;
+	}
+
+	@Override
+	public List<Product> searchProducts(String searchTerm, String category, Double minPrice, Double maxPrice) {
+		Session session = sessionFactory.openSession();
+		Criteria criteria = session.createCriteria(Product.class);
+		
+		if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+			criteria.add(Restrictions.ilike("productName", "%" + searchTerm + "%"));
+		}
+		
+		if (category != null && !category.trim().isEmpty() && !category.equals("All")) {
+			criteria.add(Restrictions.eq("productCategory", category));
+		}
+		
+		if (minPrice != null && minPrice > 0) {
+			criteria.add(Restrictions.ge("productPrice", minPrice));
+		}
+		
+		if (maxPrice != null && maxPrice > 0) {
+			criteria.add(Restrictions.le("productPrice", maxPrice));
+		}
+		
+		@SuppressWarnings("unchecked")
+		List<Product> products = criteria.list();
+		session.close();
+		return products;
 	}
 
 }

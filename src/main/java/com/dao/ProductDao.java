@@ -16,4 +16,13 @@ public interface ProductDao {
 	
 	void editProduct(Product product);
 	
+	// Search methods
+	List<Product> searchProductsByName(String searchTerm);
+	
+	List<Product> searchProductsByCategory(String category);
+	
+	List<Product> searchProductsByPriceRange(double minPrice, double maxPrice);
+	
+	List<Product> searchProducts(String searchTerm, String category, Double minPrice, Double maxPrice);
+	
 }

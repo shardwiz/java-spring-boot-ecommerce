@@ -46,4 +46,24 @@ public class ProductServiceImpl implements ProductService {
 		productDao.editProduct(product);
 	}
 
+	@Transactional
+	public List<Product> searchProductsByName(String searchTerm) {
+		return productDao.searchProductsByName(searchTerm);
+	}
+
+	@Transactional
+	public List<Product> searchProductsByCategory(String category) {
+		return productDao.searchProductsByCategory(category);
+	}
+
+	@Transactional
+	public List<Product> searchProductsByPriceRange(double minPrice, double maxPrice) {
+		return productDao.searchProductsByPriceRange(minPrice, maxPrice);
+	}
+
+	@Transactional
+	public List<Product> searchProducts(String searchTerm, String category, Double minPrice, Double maxPrice) {
+		return productDao.searchProducts(searchTerm, category, minPrice, maxPrice);
+	}
+
 }
