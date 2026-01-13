@@ -6,12 +6,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,9 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartResolver;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -34,29 +35,12 @@ import com.service.ProductService;
 @Controller
 public class ProductController {
 
+	private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
+	private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+	private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList("image/jpeg", "image/jpg", "image/png", "image/gif");
+
 	@Autowired
 	private ProductService productService;
-
-	// Getters and Setters
-
-	public ProductService getProductService() {
-		return productService;
-	}
-
-	public void setProductService(ProductService productService) {
-		this.productService = productService;
-	}
-
-	// Configuration for MultiPartResolver
-	// Multipart resolver is for uploading images and other media
-	// maxupload size is for image size should not be maximum than 10240000
-
-	@Bean
-	public MultipartResolver multipartResolver() {
-		CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
-		multipartResolver.setMaxUploadSize(10240000);
-		return multipartResolver;
-	}
 
 	// Request Mapping
 
@@ -81,27 +65,55 @@ public class ProductController {
 
 	@RequestMapping("getProductById/{productId}")
 	public ModelAndView getProductById(@PathVariable(value = "productId") String productId) {
+		if (productId == null || productId.trim().isEmpty()) {
+			logger.warn("Attempted to access product with null or empty productId");
+			return new ModelAndView("redirect:/getAllProducts");
+		}
+		
 		Product product = productService.getProductById(productId);
+		if (product == null) {
+			logger.warn("Product not found with id: {}", productId);
+			return new ModelAndView("redirect:/getAllProducts");
+		}
+		
 		return new ModelAndView("productPage", "productObj", product);
 	}
 
 	@RequestMapping("/admin/delete/{productId}")
-	public String deleteProduct(@PathVariable(value = "productId") String productId, HttpServletRequest request) {
-
-		// Here the Path class is used to refer the path of the file
-		ServletContext servletContext = request.getServletContext();
-		String realPath = servletContext.getRealPath("/WEB-INF/resource/images/products/");
-		Path path = Paths.get(realPath + productId + ".jpg");
-
-		if (Files.exists(path)) {
-			try {
-				Files.delete(path);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+	public String deleteProduct(@PathVariable(value = "productId") String productId, 
+			HttpServletRequest request, RedirectAttributes redirectAttributes) {
+		
+		if (productId == null || productId.trim().isEmpty()) {
+			logger.warn("Attempted to delete product with null or empty productId");
+			redirectAttributes.addFlashAttribute("error", "Invalid product ID");
+			return "redirect:/getAllProducts";
 		}
 
-		productService.deleteProduct(productId);
+		try {
+			// Delete product image file
+			ServletContext servletContext = request.getServletContext();
+			String realPath = servletContext.getRealPath("/WEB-INF/resource/images/products/");
+			if (realPath != null) {
+				Path path = Paths.get(realPath + productId + ".jpg");
+				if (Files.exists(path)) {
+					try {
+						Files.delete(path);
+						logger.info("Product image deleted: {}", path);
+					} catch (IOException e) {
+						logger.error("Error deleting product image for productId: {}", productId, e);
+						// Continue with product deletion even if image deletion fails
+					}
+				}
+			}
+
+			productService.deleteProduct(productId);
+			redirectAttributes.addFlashAttribute("success", "Product deleted successfully");
+			logger.info("Product deleted successfully with id: {}", productId);
+		} catch (Exception e) {
+			logger.error("Error deleting product with id: {}", productId, e);
+			redirectAttributes.addFlashAttribute("error", "Failed to delete product");
+		}
+		
 		return "redirect:/getAllProducts";
 	}
 
@@ -117,41 +129,108 @@ public class ProductController {
 	}
 
 	@RequestMapping(value = "/admin/product/addProduct", method = RequestMethod.POST)
-	public String addProduct(@Valid @ModelAttribute(value = "productFormObj") Product product, BindingResult result,
-			HttpServletRequest request) {
-		// Binding Result is used if the form that has any error then it will
-		// redirect to the same page without performing any functions
-		if (result.hasErrors())
+	public String addProduct(@Valid @ModelAttribute(value = "productFormObj") Product product, 
+			BindingResult result, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+		
+		if (result.hasErrors()) {
+			logger.debug("Validation errors in product form");
 			return "addProduct";
-		productService.addProduct(product);
-		MultipartFile image = product.getProductImage();
-		if (image != null && !image.isEmpty()) {
-			ServletContext servletContext = request.getServletContext();
-			String realPath = servletContext.getRealPath("/WEB-INF/resource/images/products/");
-			Path path = Paths.get(realPath + product.getProductId() + ".jpg");
-
-			try {
-				image.transferTo(new File(path.toString()));
-			} catch (IllegalStateException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-				// Log the error for debugging
-			}
-
 		}
+		
+		try {
+			productService.addProduct(product);
+			
+			// Handle image upload
+			MultipartFile image = product.getProductImage();
+			if (image != null && !image.isEmpty()) {
+				// Validate file
+				if (!isValidImageFile(image)) {
+					redirectAttributes.addFlashAttribute("error", "Invalid image file. Only JPEG, PNG, and GIF are allowed.");
+					return "redirect:/admin/product/addProduct";
+				}
+				
+				ServletContext servletContext = request.getServletContext();
+				String realPath = servletContext.getRealPath("/WEB-INF/resource/images/products/");
+				if (realPath != null) {
+					// Ensure directory exists
+					Path directory = Paths.get(realPath);
+					if (!Files.exists(directory)) {
+						Files.createDirectories(directory);
+					}
+					
+					Path path = Paths.get(realPath + product.getProductId() + ".jpg");
+					image.transferTo(new File(path.toString()));
+					logger.info("Product image saved: {}", path);
+				}
+			}
+			
+			redirectAttributes.addFlashAttribute("success", "Product added successfully");
+			logger.info("Product added successfully with id: {}", product.getProductId());
+		} catch (Exception e) {
+			logger.error("Error adding product", e);
+			redirectAttributes.addFlashAttribute("error", "Failed to add product: " + e.getMessage());
+			return "addProduct";
+		}
+		
 		return "redirect:/getAllProducts";
+	}
+	
+	/**
+	 * Validates if the uploaded file is a valid image
+	 */
+	private boolean isValidImageFile(MultipartFile file) {
+		if (file == null || file.isEmpty()) {
+			return false;
+		}
+		
+		String contentType = file.getContentType();
+		if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
+			logger.warn("Invalid file type: {}", contentType);
+			return false;
+		}
+		
+		if (file.getSize() > MAX_FILE_SIZE) {
+			logger.warn("File size too large: {} bytes", file.getSize());
+			return false;
+		}
+		
+		return true;
 	}
 
 	@RequestMapping(value = "/admin/product/editProduct/{productId}")
 	public ModelAndView getEditForm(@PathVariable(value = "productId") String productId) {
+		if (productId == null || productId.trim().isEmpty()) {
+			logger.warn("Attempted to edit product with null or empty productId");
+			return new ModelAndView("redirect:/getAllProducts");
+		}
+		
 		Product product = productService.getProductById(productId);
+		if (product == null) {
+			logger.warn("Product not found for editing with id: {}", productId);
+			return new ModelAndView("redirect:/getAllProducts");
+		}
+		
 		return new ModelAndView("editProduct", "editProductObj", product);
 	}
 
 	@RequestMapping(value = "/admin/product/editProduct", method = RequestMethod.POST)
-	public String editProduct(@ModelAttribute(value = "editProductObj") Product product) {
-		productService.editProduct(product);
+	public String editProduct(@ModelAttribute(value = "editProductObj") Product product, 
+			RedirectAttributes redirectAttributes) {
+		if (product == null || product.getProductId() == null) {
+			logger.warn("Attempted to edit null product or product with null id");
+			redirectAttributes.addFlashAttribute("error", "Invalid product data");
+			return "redirect:/getAllProducts";
+		}
+		
+		try {
+			productService.editProduct(product);
+			redirectAttributes.addFlashAttribute("success", "Product updated successfully");
+			logger.info("Product updated successfully with id: {}", product.getProductId());
+		} catch (Exception e) {
+			logger.error("Error updating product with id: {}", product.getProductId(), e);
+			redirectAttributes.addFlashAttribute("error", "Failed to update product");
+		}
+		
 		return "redirect:/getAllProducts";
 	}
 

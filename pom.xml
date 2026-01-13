@@ -137,6 +137,20 @@
 		<version>2.3.3.RELEASE</version>
 	</dependency>
 	
+	<!-- SLF4J API for logging -->
+	<dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-api</artifactId>
+		<version>1.7.25</version>
+	</dependency>
+	
+	<!-- Logback implementation for SLF4J -->
+	<dependency>
+		<groupId>ch.qos.logback</groupId>
+		<artifactId>logback-classic</artifactId>
+		<version>1.2.3</version>
+	</dependency>
+	
 	</dependencies>
 	<build>
 		<finalName>shopieasy</finalName>
