@@ -18,8 +18,8 @@ modules
 3. **Spring Security**
 
 * User can login into the site
-* The entire site will change according to the role, depending on whether the client is User or Admin.
-* User can logout after completing.
+* The entire site will change according to the role, depending on whether the client is User or Admin
+* User can logout after completing
 
 4. **Spring WebFlow**
 
