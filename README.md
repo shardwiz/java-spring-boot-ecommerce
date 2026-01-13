@@ -23,12 +23,12 @@ modules
 
 4. **Spring WebFlow**
 
-* After adding products the cart the User can checkout using spring WebFlow.
-* Confirming User Details.
-* Confirming Shipping and Billing Address.
-* Receipt.
-* If the user cancels the webflow, it will go to cancel Page.
-* If the user submits the checkout, it will go to thank you page with the timing of delivery Report.
+* After adding products the cart the User can checkout using spring WebFlow
+* Confirming User Details
+* Confirming Shipping and Billing Address
+* Receipt
+* If the user cancels the webflow, it will go to cancel Page
+* If the user submits the checkout, it will go to thank you page with the timing of delivery Report
 
 ### Tools and Technologies:
 
