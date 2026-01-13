@@ -25,6 +25,9 @@ import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import com.model.Product;
 import com.service.ProductService;
 
@@ -66,10 +69,12 @@ public class ProductController {
 	*	return new ModelAndView("productListAngular", "products", products);
 	*}
 	*/
-	//		Normal ProductList view 
-	  @RequestMapping("/getAllProducts") public ModelAndView getAllProducts() {
-	  List<Product> products = productService.getAllProducts(); return new
-	  ModelAndView("productList", "products", products); }
+	// Normal ProductList view
+	@RequestMapping("/getAllProducts")
+	public ModelAndView getAllProducts() {
+		List<Product> products = productService.getAllProducts();
+		return new ModelAndView("productList", "products", products);
+	}
 	 
 	
 	// this is used for getting the product by productId
@@ -81,12 +86,12 @@ public class ProductController {
 	}
 
 	@RequestMapping("/admin/delete/{productId}")
-	public String deleteProduct(@PathVariable(value = "productId") String productId) {
+	public String deleteProduct(@PathVariable(value = "productId") String productId, HttpServletRequest request) {
 
 		// Here the Path class is used to refer the path of the file
-
-		Path path = Paths.get("C:/Users/Ismail/workspace/ShoppingCart/src/main/webapp/WEB-INF/resource/images/products/"
-				+ productId + ".jpg");
+		ServletContext servletContext = request.getServletContext();
+		String realPath = servletContext.getRealPath("/WEB-INF/resource/images/products/");
+		Path path = Paths.get(realPath + productId + ".jpg");
 
 		if (Files.exists(path)) {
 			try {
@@ -97,7 +102,6 @@ public class ProductController {
 		}
 
 		productService.deleteProduct(productId);
-		// http://localhost:8080/shoppingCart/getAllProducts
 		return "redirect:/getAllProducts";
 	}
 
@@ -113,7 +117,8 @@ public class ProductController {
 	}
 
 	@RequestMapping(value = "/admin/product/addProduct", method = RequestMethod.POST)
-	public String addProduct(@Valid @ModelAttribute(value = "productFormObj") Product product, BindingResult result) {
+	public String addProduct(@Valid @ModelAttribute(value = "productFormObj") Product product, BindingResult result,
+			HttpServletRequest request) {
 		// Binding Result is used if the form that has any error then it will
 		// redirect to the same page without performing any functions
 		if (result.hasErrors())
@@ -121,17 +126,17 @@ public class ProductController {
 		productService.addProduct(product);
 		MultipartFile image = product.getProductImage();
 		if (image != null && !image.isEmpty()) {
-			Path path = Paths
-					.get("C:/Users/Ismail/workspace/ShoppingCart/src/main/webapp/WEB-INF/resource/images/products/"
-							+ product.getProductId() + ".jpg");
+			ServletContext servletContext = request.getServletContext();
+			String realPath = servletContext.getRealPath("/WEB-INF/resource/images/products/");
+			Path path = Paths.get(realPath + product.getProductId() + ".jpg");
 
 			try {
 				image.transferTo(new File(path.toString()));
 			} catch (IllegalStateException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				// Log the error for debugging
 			}
 
 		}
